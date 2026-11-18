@@ -4,6 +4,8 @@ Main entry point executing the gesture controller loop.
 
 # Standard library
 import time
+import webbrowser
+from threading import Event
 
 # Third-party
 import cv2
@@ -15,8 +17,11 @@ from click_drag import ClickDragController
 from config import (
     CAMERA_HEIGHT,
     CAMERA_WIDTH,
+    AUTO_OPEN_GOOGLE_EARTH,
     CLICK_COOLDOWN,
+    EARTH_STARTUP_DELAY_SECONDS,
     FRAME_REDUCTION,
+    GOOGLE_EARTH_URL,
     MAX_NUM_HANDS,
     MIN_DETECTION_CONFIDENCE,
     MIN_TRACKING_CONFIDENCE,
@@ -37,6 +42,7 @@ from gestures import detect_gesture
 from rotate import RotateController
 from utils import get_finger_folding_states, get_landmarks_px
 from zoom import ZoomController
+import runtime
 
 # PyAutoGUI configurations
 pyautogui.FAILSAFE = False
@@ -44,8 +50,30 @@ pyautogui.PAUSE = 0
 
 WINDOW_TITLE = "Gesture Earth Controller v1.0"
 
-def main():
+def main(stop_event=None, web_mode=False):
+    if stop_event is None:
+        stop_event = Event()
+
+    controls = runtime.get_controls()
+    auto_open_earth = controls["auto_open_earth"] if web_mode else AUTO_OPEN_GOOGLE_EARTH
+    if auto_open_earth:
+        try:
+            earth_opened = webbrowser.open(GOOGLE_EARTH_URL, new=2, autoraise=True)
+        except (webbrowser.Error, OSError) as error:
+            earth_opened = False
+            print(f"Could not open Google Earth automatically: {error}")
+
+        if earth_opened:
+            print("Opened Google Earth in your default browser.")
+            time.sleep(EARTH_STARTUP_DELAY_SECONDS)
+        else:
+            print("Google Earth did not open automatically. Check your default browser settings.")
+
     cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        cap.release()
+        raise RuntimeError("Could not open camera 0. Check camera permissions and availability.")
+
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
 
@@ -80,21 +108,31 @@ def main():
         rotate_delay=ROTATE_DELAY
     )
     prev_time = 0
-    show_dashboard = True
-    show_landmarks = True
+    show_dashboard = controls["show_dashboard"]
+    show_landmarks = controls["show_landmarks"]
+    last_tracking = None
+    last_gesture = None
 
-    cv2.namedWindow(WINDOW_TITLE, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(WINDOW_TITLE, 500, 350)
-    cv2.moveWindow(WINDOW_TITLE, 20, 20)
-    try:
-        cv2.setWindowProperty(WINDOW_TITLE, cv2.WND_PROP_TOPMOST, 1)
-    except:
-        pass
+    if not web_mode:
+        cv2.namedWindow(WINDOW_TITLE, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(WINDOW_TITLE, 500, 350)
+        cv2.moveWindow(WINDOW_TITLE, 20, 20)
+        try:
+            cv2.setWindowProperty(WINDOW_TITLE, cv2.WND_PROP_TOPMOST, 1)
+        except:
+            pass
 
-    while True:
+    runtime.set_state(state="running", tracking="Searching", camera="Ready", error=None)
+    runtime.add_event("Camera ready; gesture tracking is live")
+
+    while not stop_event.is_set():
+        controls = runtime.get_controls()
+        show_dashboard = controls["show_dashboard"]
+        show_landmarks = controls["show_landmarks"]
+
         ok, frame = cap.read()
         if not ok:
-            print("Failed to read camera.")
+            runtime.add_event("Camera frame could not be read")
             break
 
         frame = cv2.flip(frame, 1)
@@ -184,6 +222,19 @@ def main():
         has_hand = results.multi_hand_landmarks is not None
         tracking_status = "ACTIVE" if has_hand else "SEARCHING..."
         tracking_color = (0, 255, 0) if has_hand else (0, 0, 255) # Green / Red
+        runtime.update_metrics(
+            camera="Ready",
+            tracking="Hand detected" if has_hand else "Searching",
+            gesture=gesture if has_hand else "—",
+            fps=int(fps),
+            error=None,
+        )
+        if tracking_status != last_tracking:
+            runtime.add_event("Hand detected" if has_hand else "Hand not in view")
+            last_tracking = tracking_status
+        if has_hand and gesture != last_gesture:
+            runtime.add_event(f"Gesture: {gesture.lower()}")
+            last_gesture = gesture
 
         # Draw semi-transparent black dashboard card
         card_w, card_h = 300, 100
@@ -208,8 +259,12 @@ def main():
                 cv2.putText(frame, "Gesture   : ", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
                 cv2.putText(frame, gesture, (120, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, g_color, 1, cv2.LINE_AA)
 
-        cv2.imshow(WINDOW_TITLE, frame)
-        key = cv2.waitKey(1) & 0xFF
+        if not web_mode:
+            cv2.imshow(WINDOW_TITLE, frame)
+        encoded, jpeg = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 78])
+        if encoded:
+            runtime.publish_frame(jpeg.tobytes())
+        key = cv2.waitKey(1) & 0xFF if not web_mode else 255
 
         if key == ord("q"):
             break
@@ -220,9 +275,12 @@ def main():
         elif key == ord("d"):
             show_landmarks = not show_landmarks
 
+    pyautogui.mouseUp()
     cap.release()
     hands.close()
-    cv2.destroyAllWindows()
+    if not web_mode:
+        cv2.destroyAllWindows()
+    runtime.publish_frame(None)
 
 if __name__ == "__main__":
     main()

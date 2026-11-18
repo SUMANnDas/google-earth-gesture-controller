@@ -19,8 +19,10 @@ Gesture Earth Controller is a computer vision project that enables touch-free na
 - 🌎 Earth Rotation
 - 🎥 Earth Tilt
 - 📊 Live Dashboard
+- 🧭 Local Web Control Center
 - ⚡ Smooth Cursor Tracking
 - 🎯 Real-time Hand Tracking using MediaPipe
+- 🌐 Opens Google Earth automatically when the controller starts
 
 ---
 
@@ -48,6 +50,13 @@ gesture-earth/
 ├── requirements.txt
 │
 ├── main.py
+├── server.py
+├── runtime.py
+├── run_dashboard.bat
+├── web/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
 ├── config.py
 ├── gestures.py
 ├── utils.py
@@ -101,11 +110,29 @@ Install dependencies
 pip install -r requirements.txt
 ```
 
-Run the application
+## 🖥️ Web Dashboard
+
+The project includes a local HTML, CSS, and JavaScript dashboard for viewing project details and controlling the gesture controller. It displays the live camera feed, tracking state, current gesture, frame rate, session time, and recent activity. The dashboard can start or stop tracking, open Google Earth, and toggle the camera overlay and hand landmarks.
+
+Start the dashboard from this folder:
+
+```bash
+python server.py
+```
+
+The local dashboard opens at `http://127.0.0.1:8765`. On Windows, you can also double-click `run_dashboard.bat`. Keep the terminal window open while using it. Click **Start controller** in the dashboard to open the webcam and begin tracking. The first start may prompt you to allow Python to use the camera.
+
+The web server listens on the local computer only. Gesture actions use PyAutoGUI to move and click the system cursor, so keep Google Earth open and focused while navigating. **Stop controller** releases any held mouse button and closes the camera preview.
+
+The original OpenCV application is still available without the web interface:
 
 ```bash
 python main.py
 ```
+
+This opens the controller directly; use `Q` to quit, `H` to toggle its dashboard, and `D` to toggle its landmarks.
+
+The Google Earth URL and startup wait are configured in `config.py`.
 
 ---
 

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090e17" />
+    <title>Gesture Earth Controller</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#home" aria-label="Gesture Earth home">
+          <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14.5"/><ellipse cx="20" cy="20" rx="6" ry="14.5"/><path d="M6 20h28M9.5 12.5h21M9.5 27.5h21"/><path class="brand-orbit" d="M3.5 26.5c7.5-2.8 17.2-9.5 32.7-14.4"/></svg></span>
+          <span class="brand-copy"><strong>gesture earth</strong><small>CONTROLLER <i>v1.0</i></small></span>
+        </a>
+
+        <div class="sidebar-label">WORKSPACE</div>
+        <nav class="side-nav" aria-label="Main navigation">
+          <a class="nav-link active" href="#home"><span class="nav-icon">◉</span> Mission control <span class="nav-dot"></span></a>
+          <a class="nav-link" href="#gestures"><span class="nav-icon">✳</span> Gesture guide</a>
+          <a class="nav-link" href="#specifications"><span class="nav-icon">⌘</span> Specifications</a>
+          <a class="nav-link" href="#setup"><span class="nav-icon">↗</span> Get started</a>
+        </nav>
+
+        <div class="sidebar-rule"></div>
+        <div class="sidebar-label">SYSTEM</div>
+        <div class="system-item"><span class="system-icon">◌</span><span>Camera input</span><b class="mini-state" id="sidebar-camera">OFF</b></div>
+        <div class="system-item"><span class="system-icon">◎</span><span>Hand tracking</span><b class="mini-state" id="sidebar-tracking">IDLE</b></div>
+
+        <div class="sidebar-bottom">
+          <div class="sidebar-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p>Explore the world,<br />hands free.</p>
+          <span class="build-label">BUILT FOR GOOGLE EARTH</span>
+        </div>
+      </aside>
+
+      <main id="home" class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb"><span>Workspace</span><b>/</b><strong>Mission control</strong></div>
+          <div class="topbar-right"><span class="local-chip"><span></span> LOCAL RUNTIME</span><span class="topbar-divider"></span><span class="avatar">HD</span></div>
+        </header>
+
+        <div class="content-wrap">
+          <section class="page-intro">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> TOUCH-FREE EARTH NAVIGATION</div>
+              <h1>Explore the world.<br /><span>Move naturally.</span></h1>
+              <p class="intro-copy">A computer vision controller that turns hand gestures into smooth, intuitive Google Earth navigation.</p>
+            </div>
+            <div class="intro-actions">
+              <button class="button button-quiet" id="open-earth"><span class="button-globe">◎</span> Open Google Earth <span class="external-arrow">↗</span></button>
+              <button class="button button-primary" id="toggle-controller"><span class="play-icon">▶</span><span id="toggle-label">Start controller</span></button>
+            </div>
+          </section>
+
+          <section class="status-strip" aria-label="Controller status">
+            <div class="status-main"><span id="status-indicator" class="status-indicator"></span><div><span class="status-kicker">CONTROLLER STATUS</span><strong id="status-text">Ready to start</strong></div></div>
+            <div class="status-meta"><div><span>TRACKING</span><strong id="tracking-text">Waiting for camera</strong></div><i></i><div><span>ACTIVE GESTURE</span><strong id="gesture-text">—</strong></div><i></i><div><span>SESSION TIME</span><strong id="uptime-text">00:00</strong></div></div>
+          </section>
+
+          <section class="dashboard-grid" aria-label="Live controller dashboard">
+            <article class="panel camera-panel">
+              <div class="panel-heading"><div><div class="panel-eyebrow">LIVE INPUT</div><h2>Camera preview</h2></div><span id="camera-pill" class="camera-pill"><span></span> CAMERA OFFLINE</span></div>
+              <div class="camera-stage">
+                <img id="camera-feed" src="/api/stream" alt="Live webcam preview with hand tracking overlays" />
+                <div id="camera-placeholder" class="camera-placeholder"><div class="placeholder-art"><span class="placeholder-ring ring-one"></span><span class="placeholder-ring ring-two"></span><span class="placeholder-globe">◎</span><span class="placeholder-cross cross-a">+</span><span class="placeholder-cross cross-b">+</span></div><strong>Camera feed will appear here</strong><span>Start the controller to begin hand tracking</span></div>
+                <div class="preview-corner preview-top-left"></div><div class="preview-corner preview-top-right"></div><div class="preview-corner preview-bottom-left"></div><div class="preview-corner preview-bottom-right"></div>
+                <div class="camera-overlay"><span class="live-label"><i></i> LIVE</span><span class="resolution-label">640 × 480 <b>•</b> MIRRORED</span></div>
+              </div>
+              <div class="camera-footer"><span><i class="camera-dot"></i><span id="camera-footer-text">Waiting for camera connection</span></span><span>INPUT <b>CAM 01</b></span></div>
+            </article>
+
+            <article class="panel overview-panel">
+              <div class="panel-heading"><div><div class="panel-eyebrow">SESSION OVERVIEW</div><h2>At a glance</h2></div><span class="pulse-mark">⌁</span></div>
+              <div class="metric-grid">
+                <div class="metric-card"><span class="metric-icon mint">◎</span><span class="metric-label">FRAME RATE</span><strong><span id="fps-value">—</span><small>FPS</small></strong><span class="metric-foot">Live processing speed</span></div>
+                <div class="metric-card"><span class="metric-icon blue">♧</span><span class="metric-label">HANDS TRACKED</span><strong><span id="hands-value">0</span><small> / 1</small></strong><span class="metric-foot">MediaPipe hand model</span></div>
+                <div class="metric-card"><span class="metric-icon violet">✳</span><span class="metric-label">GESTURE MODE</span><strong class="metric-gesture" id="mode-value">STANDBY</strong><span class="metric-foot">Detected in real time</span></div>
+                <div class="metric-card"><span class="metric-icon amber">◷</span><span class="metric-label">CAMERA</span><strong class="metric-camera" id="camera-value">OFFLINE</strong><span class="metric-foot">Default device · index 0</span></div>
+              </div>
+              <div class="runtime-note"><span class="runtime-note-icon">i</span><span>Gesture control moves your system cursor. Keep Google Earth open and in focus for the best experience.</span></div>
+              <div class="activity-heading"><span>RECENT ACTIVITY</span><span>LIVE LOG</span></div>
+              <div id="activity-list" class="activity-list"><div class="activity-empty">Start the controller to see live activity.</div></div>
+            </article>
+          </section>
+
+          <section id="gestures" class="section-block gesture-section">
+            <div class="section-heading"><div><div class="panel-eyebrow">HOW IT WORKS</div><h2>Gestures, meet geography.</h2><p>Natural movements become precise controls for exploring the globe.</p></div><span class="section-index">01 <i>—</i> GESTURES</span></div>
+            <div class="gesture-grid">
+              <article class="gesture-card"><div class="gesture-card-top"><span class="gesture-number">01</span><span class="gesture-status status-move">MOVE</span></div><div class="gesture-illustration hand-point"><span class="finger">☝</span><span class="gesture-orbit"></span><span class="gesture-cursor">↖</span></div><h3>Point to move</h3><p>Raise your index finger and move your hand to guide the cursor across the map.</p><span class="gesture-shortcut">INDEX FINGER UP</span></article>
+              <article class="gesture-card"><div class="gesture-card-top"><span class="gesture-number">02</span><span class="gesture-status status-click">CLICK · DRAG</span></div><div class="gesture-illustration hand-pinch"><span class="pinch-hand">⌁</span><span class="pinch-dot"></span><span class="pinch-wave"></span></div><h3>Pinch to interact</h3><p>Tap thumb and index together for a click. Hold the pinch to grab and drag.</p><span class="gesture-shortcut">THUMB + INDEX</span></article>
+              <article class="gesture-card"><div class="gesture-card-top"><span class="gesture-number">03</span><span class="gesture-status status-zoom">ZOOM</span></div><div class="gesture-illustration hand-zoom"><span class="zoom-finger finger-left">☝</span><span class="zoom-finger finger-right">☝</span><span class="zoom-arrows">↕</span></div><h3>Two fingers to zoom</h3><p>Raise index and middle fingers, then move them vertically to zoom in or out.</p><span class="gesture-shortcut">INDEX + MIDDLE</span></article>
+              <article class="gesture-card"><div class="gesture-card-top"><span class="gesture-number">04</span><span class="gesture-status status-rotate">ROTATE · TILT</span></div><div class="gesture-illustration hand-rotate"><span class="palm-symbol">✋</span><span class="rotate-orbit orbit-a"></span><span class="rotate-orbit orbit-b"></span><span class="rotate-arrow">↗</span></div><h3>Open palm to explore</h3><p>Hold an open palm briefly, then move your hand to rotate and tilt the view.</p><span class="gesture-shortcut">OPEN PALM</span></article>
+            </div>
+          </section>
+
+          <section class="control-spec-grid">
+            <article class="panel controls-panel"><div class="panel-heading"><div><div class="panel-eyebrow">PERSONALIZE</div><h2>Controller settings</h2></div><span class="settings-mark">☷</span></div>
+              <div class="setting-row"><div><strong>Show dashboard overlay</strong><span>Display status on the camera preview</span></div><label class="switch"><input id="dashboard-toggle" type="checkbox" checked /><span></span></label></div>
+              <div class="setting-row"><div><strong>Show hand landmarks</strong><span>Draw tracked finger points in the preview</span></div><label class="switch"><input id="landmarks-toggle" type="checkbox" checked /><span></span></label></div>
+              <div class="setting-row"><div><strong>Open Earth on start</strong><span>Launch Google Earth with the controller</span></div><label class="switch"><input id="auto-earth-toggle" type="checkbox" checked /><span></span></label></div>
+              <div class="settings-foot"><span class="saved-check">✓</span> Visual settings apply now · Earth opens on next start</div>
+            </article>
+
+            <article id="specifications" class="panel specs-panel"><div class="panel-heading"><div><div class="panel-eyebrow">UNDER THE HOOD</div><h2>Project specifications</h2></div><span class="settings-mark">⌘</span></div>
+              <div class="spec-list"><div><span>COMPUTER VISION</span><strong>MediaPipe Hands <em>0.10.14</em></strong></div><div><span>IMAGE PROCESSING</span><strong>OpenCV <em>4.13</em></strong></div><div><span>INPUT CONTROL</span><strong>PyAutoGUI <em>0.9.54</em></strong></div><div><span>CAMERA PROFILE</span><strong>640 × 480 <em>· 1 hand</em></strong></div><div><span>DETECTION / TRACKING</span><strong>0.60 / 0.60 <em>confidence</em></strong></div><div><span>CURSOR SMOOTHING</span><strong>2× <em>interpolation</em></strong></div><div><span>PINCH THRESHOLDS</span><strong>20 / 35 px <em>start / release</em></strong></div><div><span>DRAG ACTIVATION</span><strong>250 ms <em>pinch hold</em></strong></div><div><span>ZOOM INPUT</span><strong>15 / 120 <em>motion / scroll</em></strong></div><div><span>PLATFORM</span><strong>Windows 10 / 11 <em>· Python 3.12</em></strong></div></div>
+              <div class="spec-footer"><span class="spec-python">Py</span><span>Python-powered · Open-source project</span><span class="spec-version">v1.0</span></div>
+            </article>
+          </section>
+
+          <section id="setup" class="setup-banner">
+            <div class="setup-decoration"><span class="setup-globe">◎</span><span class="setup-ring"></span></div>
+            <div class="setup-copy"><div class="panel-eyebrow">READY FOR TAKEOFF?</div><h2>Get set up in a few minutes.</h2><p>Install the Python requirements, connect a webcam, and launch this dashboard to begin.</p></div>
+            <div class="setup-actions"><code>python server.py</code><button class="copy-button" id="copy-command" aria-label="Copy command">▢</button><a class="button button-primary setup-link" href="#setup-details">Setup steps <span>↗</span></a></div>
+          </section>
+
+          <section id="setup-details" class="setup-details"><div><span class="step-number">01</span><div><strong>Install dependencies</strong><code>pip install -r requirements.txt</code></div></div><div><span class="step-number">02</span><div><strong>Start this dashboard</strong><code>python server.py</code></div></div><div><span class="step-number">03</span><div><strong>Start exploring</strong><span>Click “Start controller” and allow camera access in Windows.</span></div></div></section>
+
+          <footer class="page-footer"><span>GESTURE EARTH CONTROLLER <i>·</i> BUILT BY HENSTON DSOUZA</span><span>MADE FOR A MORE NATURAL WAY TO EXPLORE <b>◎</b></span></footer>
+        </div>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
