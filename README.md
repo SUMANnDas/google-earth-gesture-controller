@@ -4,192 +4,140 @@
 
 # 🌍 Gesture Earth Controller
 
-Control **Google Earth** using intuitive hand gestures powered by **MediaPipe**, **OpenCV**, and **PyAutoGUI**.
+I created Gesture Earth Controller to make exploring Google Earth feel more natural. It uses a webcam to track my hand and turns simple gestures into cursor, click, drag, zoom, and map navigation controls.
 
-Gesture Earth Controller is a computer vision project that enables touch-free navigation of Google Earth using a webcam. Users can move the cursor, click, drag, zoom, rotate, and tilt the Earth with natural hand gestures.
+I built the gesture recognition with **MediaPipe** and **OpenCV**, and use **PyAutoGUI** to send mouse actions to Google Earth. I also created a local web dashboard so I can start and stop the controller, see the live camera feed, and adjust its display settings from one place.
 
----
+## ✨ What I built
 
-## ✨ Features
+- Hand-tracked cursor movement
+- Pinch gestures for clicking and dragging
+- Two-finger zoom control
+- Open-palm map rotation and view adjustment
+- A local dashboard with live camera preview, tracking status, gesture, FPS, session time, and activity log
+- Dashboard controls for starting and stopping tracking, opening Google Earth, and showing or hiding the camera overlay and hand landmarks
+- Smoothed cursor movement and automatic Google Earth launch
 
-- 🖱️ Cursor Movement
-- 👆 Click Detection
-- 🤏 Drag & Drop
-- 🔍 Zoom In / Zoom Out
-- 🌎 Earth Rotation
-- 🎥 Earth Tilt
-- 📊 Live Dashboard
-- 🧭 Local Web Control Center
-- ⚡ Smooth Cursor Tracking
-- 🎯 Real-time Hand Tracking using MediaPipe
-- 🌐 Opens Google Earth automatically when the controller starts
+## 🖐️ Gesture controls
 
----
+| My gesture | What it does |
+|---|---|
+| ☝️ Raise my index finger | Move the cursor |
+| 🤏 Pinch thumb and index briefly | Click |
+| 🤏 Hold the pinch | Drag |
+| ✌️ Bring index and middle fingers together, then move vertically | Zoom in or out |
+| 🖐️ Hold an open palm, then move my hand | Rotate or adjust the map view |
 
-## 🖐️ Supported Gestures
+## 🧰 How the project works
 
-| Gesture | Action |
-|----------|--------|
-| ☝️ Index Finger | Cursor Movement |
-| 🤏 Thumb + Index Pinch | Click |
-| 🤏 Hold Pinch | Drag |
-| ✌️ Index + Middle | Zoom |
-| 🖐️ Open Palm | Rotate Earth |
-| 🤏🤏 Double Pinch + Drag | Tilt Earth |
+The camera frames are processed by MediaPipe Hands. I use the hand landmarks and fingertip distances to classify each gesture, then route it to the matching cursor, click-and-drag, zoom, or rotation controller. OpenCV draws the optional dashboard and landmark overlays.
 
----
-
-## 📂 Project Structure
+The web dashboard is served locally by `server.py`. It reads runtime status and camera frames from `runtime.py`, and its buttons send start, stop, and display-setting commands to the controller.
 
 ```text
-gesture-earth/
-│
-├── .gitignore
-├── LICENSE
-├── README.md
-├── requirements.txt
-│
-├── main.py
-├── server.py
-├── runtime.py
-├── run_dashboard.bat
-├── web/
-│   ├── index.html
-│   ├── styles.css
-│   └── app.js
-├── config.py
-├── gestures.py
-├── utils.py
-├── cursor.py
-├── click_drag.py
-├── zoom.py
-└── rotate.py
+main.py                 Webcam, hand tracking, and controller loop
+gestures.py             Gesture classification
+cursor.py               Cursor movement and smoothing
+click_drag.py           Pinch click and drag behavior
+zoom.py                 Two-finger zoom behavior
+rotate.py               Open-palm map movement
+utils.py                Landmark and distance calculations
+config.py               Camera and gesture tuning values
+server.py, runtime.py   Local dashboard server and live state
+web/                    HTML, CSS, and JavaScript dashboard
+run_dashboard.bat       Windows dashboard launcher
 ```
 
----
+## ⚙️ Specifications
 
-## ⚙️ Requirements
-
-- Windows 10 / Windows 11
-- Python **3.12.3** (Tested)
-- Webcam
-
----
+| Setting | Value |
+|---|---|
+| Operating system | Windows 10 / 11 |
+| Python | 3.12.3 (tested) |
+| Camera input | 640 × 480, default camera (index 0) |
+| Hand tracking | One hand; detection and tracking confidence 0.60 |
+| MediaPipe | 0.10.14 |
+| OpenCV | opencv-contrib-python 4.13.0.92 |
+| PyAutoGUI | 0.9.54 |
+| Pinch thresholds | 20 px to start; 35 px to release |
+| Drag activation | Hold a pinch for 250 ms |
+| Zoom settings | 15 px movement threshold; 120 scroll step |
 
 ## 🚀 Installation
 
-Clone the repository
+Clone the repository and move into the project folder:
 
 ```bash
 git clone https://github.com/henston-dza/gesture-earth.git
-```
-
-Move into the project
-
-```bash
 cd gesture-earth
 ```
 
-Create a virtual environment
+Create and activate a virtual environment on Windows, then install the dependencies:
 
 ```bash
 python -m venv venv
-```
-
-Activate it
-
-### Windows
-
-```bash
 venv\Scripts\activate
-```
-
-Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-## 🖥️ Web Dashboard
+## 🖥️ Run my web dashboard
 
-The project includes a local HTML, CSS, and JavaScript dashboard for viewing project details and controlling the gesture controller. It displays the live camera feed, tracking state, current gesture, frame rate, session time, and recent activity. The dashboard can start or stop tracking, open Google Earth, and toggle the camera overlay and hand landmarks.
-
-Start the dashboard from this folder:
+Start the local dashboard from the project folder:
 
 ```bash
 python server.py
 ```
 
-The local dashboard opens at `http://127.0.0.1:8765`. On Windows, you can also double-click `run_dashboard.bat`. Keep the terminal window open while using it. Click **Start controller** in the dashboard to open the webcam and begin tracking. The first start may prompt you to allow Python to use the camera.
+It opens at [http://127.0.0.1:8765](http://127.0.0.1:8765). On Windows, I can also start it by double-clicking `run_dashboard.bat`. I keep the terminal window open while using the dashboard, then click **Start controller** to begin hand tracking. The first run may ask me to allow Python to use the webcam.
 
-The web server listens on the local computer only. Gesture actions use PyAutoGUI to move and click the system cursor, so keep Google Earth open and focused while navigating. **Stop controller** releases any held mouse button and closes the camera preview.
+From the dashboard, I can:
 
-The original OpenCV application is still available without the web interface:
+- Start and stop the gesture controller
+- Open Google Earth in my default browser
+- View the camera feed and current tracking information
+- Toggle the OpenCV dashboard overlay and hand landmarks
+- Choose whether Google Earth opens automatically when tracking starts
+
+The dashboard server listens on my computer only. The controller uses PyAutoGUI to move and click the system cursor, so I keep Google Earth open and focused while navigating. Stopping the controller releases any held mouse button and closes the camera feed.
+
+## Run the original OpenCV window
+
+I can also run the controller without the web dashboard:
 
 ```bash
 python main.py
 ```
 
-This opens the controller directly; use `Q` to quit, `H` to toggle its dashboard, and `D` to toggle its landmarks.
-
-The Google Earth URL and startup wait are configured in `config.py`.
-
----
-
-## ⌨️ Keyboard Shortcuts
-
-| Key | Function |
-|-----|----------|
-| H | Toggle Dashboard |
-| D | Toggle Hand Landmarks |
-| Q | Quit Application |
-
-
----
+In this mode, I use `H` to toggle the dashboard overlay, `D` to toggle hand landmarks, and `Q` to quit.
 
 ## 🎥 Demo
 
-Watch the demo on **[LinkedIn](https://www.linkedin.com/posts/henston-melroy-dsouza_python-computervision-mediapipe-ugcPost-7478811191033643008-d7gI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEvlPaUBVB_3EiuU4wV9mAZEFjrA2scFFgQ)**.
+I shared a demo on [LinkedIn](https://www.linkedin.com/posts/henston-melroy-dsouza_python-computervision-mediapipe-ugcPost-7478811191033643008-d7gI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEvlPaUBVB_3EiuU4wV9mAZEFjrA2scFFgQ).
 
----
+## ⚠️ Known limitations
 
-## ⚠️ Known Limitations
+- I currently track one hand at a time.
+- The controller is designed for Windows and Google Earth in a desktop browser.
+- In the original OpenCV window mode, moving the preview window may temporarily pause the preview because of OpenCV HighGUI behavior.
+- Gesture input is sent to the system cursor, so Google Earth needs to be open and focused for navigation.
 
-- The OpenCV preview window temporarily pauses while it is being moved. This is a limitation of OpenCV's HighGUI window system.
-- For best performance, keep the camera preview window focused while using keyboard shortcuts.
-- Tested on Windows 11 with Python 3.12.3.
+## 🔮 What I’d like to improve next
 
----
+- Add multi-hand support
+- Let users calibrate gestures and tune sensitivity from the dashboard
+- Add custom gesture mapping
+- Support more platforms
+- Explore voice commands
 
-## 🔮 Future Improvements
-
-- Multi-hand support
-- Custom gesture mapping
-- Gesture calibration
-- Cross-platform support
-- GUI settings panel
-- Gesture sensitivity adjustment
-- Voice command integration
-
----
-
-## 🛠️ Technologies Used
+## 🛠️ Technologies I used
 
 - Python
-- OpenCV
 - MediaPipe
+- OpenCV
 - PyAutoGUI
+- HTML, CSS, and JavaScript
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 👨‍💻 Author
-
-**Henston Dsouza**
-
-GitHub: https://github.com/henston-dza
+**Created by Henston Dsouza**  
+[GitHub](https://github.com/henston-dza) · [LinkedIn demo](https://www.linkedin.com/posts/henston-melroy-dsouza_python-computervision-mediapipe-ugcPost-7478811191033643008-d7gI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEvlPaUBVB_3EiuU4wV9mAZEFjrA2scFFgQ)
