@@ -110,10 +110,6 @@ python main.py
 
 In this mode, I use `H` to toggle the dashboard overlay, `D` to toggle hand landmarks, and `Q` to quit.
 
-## 🎥 Demo
-
-I shared a demo on [LinkedIn](https://www.linkedin.com/posts/henston-melroy-dsouza_python-computervision-mediapipe-ugcPost-7478811191033643008-d7gI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEvlPaUBVB_3EiuU4wV9mAZEFjrA2scFFgQ).
-
 ## ⚠️ Known limitations
 
 - I currently track one hand at a time.
@@ -139,5 +135,3 @@ I shared a demo on [LinkedIn](https://www.linkedin.com/posts/henston-melroy-dsou
 
 ---
 
-**Created by Henston Dsouza**  
-[GitHub](https://github.com/henston-dza) · [LinkedIn demo](https://www.linkedin.com/posts/henston-melroy-dsouza_python-computervision-mediapipe-ugcPost-7478811191033643008-d7gI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEvlPaUBVB_3EiuU4wV9mAZEFjrA2scFFgQ)
