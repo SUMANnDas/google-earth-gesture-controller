@@ -15,6 +15,7 @@ I built the gesture recognition with **MediaPipe** and **OpenCV**, and use **PyA
 - Two-finger zoom control
 - Open-palm map rotation and view adjustment
 - A local dashboard with live camera preview, tracking status, gesture, FPS, session time, and activity log
+- A floating Picture-in-Picture preview with the current gesture and its control action, so I can keep the hand demonstration visible while switching to Google Earth
 - Dashboard controls for starting and stopping tracking, opening Google Earth, and showing or hiding the camera overlay and hand landmarks
 - Smoothed cursor movement and automatic Google Earth launch
 
@@ -95,6 +96,7 @@ From the dashboard, I can:
 - Start and stop the gesture controller
 - Open Google Earth in my default browser
 - View the camera feed and current tracking information
+- Pin the camera feed in a floating Picture-in-Picture window with the recognized gesture and action
 - Toggle the OpenCV dashboard overlay and hand landmarks
 - Choose whether Google Earth opens automatically when tracking starts
 

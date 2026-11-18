@@ -64,13 +64,15 @@
 
           <section class="dashboard-grid" aria-label="Live controller dashboard">
             <article class="panel camera-panel">
-              <div class="panel-heading"><div><div class="panel-eyebrow">LIVE INPUT</div><h2>Camera preview</h2></div><span id="camera-pill" class="camera-pill"><span></span> CAMERA OFFLINE</span></div>
+              <div class="panel-heading"><div><div class="panel-eyebrow">LIVE INPUT</div><h2>Camera preview</h2></div><div class="camera-heading-actions"><button class="pip-button" id="pip-button" type="button" title="Keep the live camera preview floating over Google Earth"><span>↗</span> Float preview</button><span id="camera-pill" class="camera-pill"><span></span> CAMERA OFFLINE</span></div></div>
               <div class="camera-stage">
                 <img id="camera-feed" src="/api/stream" alt="Live webcam preview with hand tracking overlays" />
                 <div id="camera-placeholder" class="camera-placeholder"><div class="placeholder-art"><span class="placeholder-ring ring-one"></span><span class="placeholder-ring ring-two"></span><span class="placeholder-globe">◎</span><span class="placeholder-cross cross-a">+</span><span class="placeholder-cross cross-b">+</span></div><strong>Camera feed will appear here</strong><span>Start the controller to begin hand tracking</span></div>
                 <div class="preview-corner preview-top-left"></div><div class="preview-corner preview-top-right"></div><div class="preview-corner preview-bottom-left"></div><div class="preview-corner preview-bottom-right"></div>
                 <div class="camera-overlay"><span class="live-label"><i></i> LIVE</span><span class="resolution-label">640 × 480 <b>•</b> MIRRORED</span></div>
               </div>
+              <canvas id="pip-canvas" width="640" height="480" hidden aria-hidden="true"></canvas>
+              <video id="pip-video" class="pip-source" muted playsinline aria-label="Floating hand tracking preview"></video>
               <div class="camera-footer"><span><i class="camera-dot"></i><span id="camera-footer-text">Waiting for camera connection</span></span><span>INPUT <b>CAM 01</b></span></div>
             </article>
 

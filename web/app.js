@@ -15,6 +15,9 @@ const ui = {
   cameraStage: $(".camera-stage"),
   cameraFeed: $("#camera-feed"),
   cameraPlaceholder: $("#camera-placeholder"),
+  pipButton: $("#pip-button"),
+  pipCanvas: $("#pip-canvas"),
+  pipVideo: $("#pip-video"),
   fps: $("#fps-value"),
   hands: $("#hands-value"),
   mode: $("#mode-value"),
@@ -30,6 +33,8 @@ let activeRuntime = false;
 let controlsInitialized = false;
 let toastTimer;
 let disconnectedShown = false;
+let latestStatus = null;
+let pipStream = null;
 
 async function api(path, method = "GET", body) {
   const response = await fetch(path, {
@@ -87,6 +92,7 @@ function escapeHtml(value) {
 }
 
 function render(status) {
+  latestStatus = status;
   const state = status.state || "idle";
   const running = state === "running";
   const busy = state === "starting" || state === "stopping";
@@ -186,8 +192,81 @@ async function openEarth() {
   }
 }
 
+function drawPictureInPicture() {
+  if (!document.pictureInPictureElement) return;
+  const canvas = ui.pipCanvas;
+  const context = canvas.getContext("2d");
+  const status = latestStatus || {};
+  const isLive = status.state === "running" && status.camera === "Ready" && ui.cameraFeed.dataset.hasFrame === "true";
+
+  context.fillStyle = "#08121b";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  if (isLive) context.drawImage(ui.cameraFeed, 0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = "rgba(5, 12, 18, .78)";
+  context.fillRect(0, 0, canvas.width, 54);
+  context.fillRect(0, canvas.height - 92, canvas.width, 92);
+
+  context.fillStyle = isLive ? "#71d8b2" : "#e8ad72";
+  context.beginPath();
+  context.arc(22, 27, 5, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#e9f1f3";
+  context.font = "600 17px 'DM Sans', Arial, sans-serif";
+  context.fillText(isLive ? "LIVE HAND CONTROL" : "CONTROLLER PAUSED", 39, 33);
+  context.textAlign = "right";
+  context.fillStyle = "#aec0ca";
+  context.font = "12px 'DM Mono', Consolas, monospace";
+  context.fillText(isLive ? `${status.fps || 0} FPS` : "START CONTROLLER TO RESUME", canvas.width - 18, 32);
+  context.textAlign = "left";
+
+  const gesture = isLive && status.tracking === "Hand detected" ? (status.gesture || "MOVE") : "SEARCHING";
+  const actions = {
+    MOVE: "MOVE CURSOR",
+    CLICK: "CLICK",
+    DRAG: "DRAG / PAN",
+    ZOOM: "ZOOM IN OR OUT",
+    ROTATE: "ROTATE MAP VIEW",
+    SEARCHING: isLive ? "SHOW YOUR HAND TO CAMERA" : "CAMERA FEED PAUSED",
+  };
+  context.fillStyle = "#7e9aab";
+  context.font = "11px 'DM Mono', Consolas, monospace";
+  context.fillText("DETECTED GESTURE", 20, canvas.height - 58);
+  context.fillText("CONTROL ACTION", 318, canvas.height - 58);
+  context.fillStyle = "#f0f4f6";
+  context.font = "600 21px 'Manrope', 'DM Sans', Arial, sans-serif";
+  context.fillText(gesture, 20, canvas.height - 25);
+  context.fillStyle = "#9ae6cd";
+  context.fillText(actions[gesture] || "HAND CONTROL", 318, canvas.height - 25);
+  requestAnimationFrame(drawPictureInPicture);
+}
+
+async function togglePictureInPicture() {
+  if (!document.pictureInPictureEnabled || !ui.pipVideo.requestPictureInPicture) {
+    showToast("Picture-in-Picture is not supported in this browser", true);
+    return;
+  }
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      return;
+    }
+    if (!pipStream) {
+      pipStream = ui.pipCanvas.captureStream(15);
+      ui.pipVideo.srcObject = pipStream;
+    }
+    await ui.pipVideo.play();
+    await ui.pipVideo.requestPictureInPicture();
+    drawPictureInPicture();
+    showToast("Preview pinned — switch to Google Earth to demonstrate gestures");
+  } catch (error) {
+    showToast(`Could not open floating preview: ${error.message}`, true);
+  }
+}
+
 ui.toggleButton.addEventListener("click", toggleController);
 $("#open-earth").addEventListener("click", openEarth);
+ui.pipButton.addEventListener("click", togglePictureInPicture);
 [ui.dashboard, ui.landmarks, ui.autoEarth].forEach((input) => input.addEventListener("change", setControls));
 
 ui.cameraFeed.addEventListener("load", () => {
@@ -202,6 +281,16 @@ ui.cameraFeed.addEventListener("error", () => {
   ui.cameraFeed.classList.remove("is-visible");
   ui.cameraPlaceholder.classList.remove("is-hidden");
 });
+ui.pipVideo.addEventListener("enterpictureinpicture", () => {
+  ui.pipButton.innerHTML = "<span>↙</span> Close preview";
+});
+ui.pipVideo.addEventListener("leavepictureinpicture", () => {
+  ui.pipButton.innerHTML = "<span>↗</span> Float preview";
+});
+
+if (!document.pictureInPictureEnabled || !ui.pipVideo.requestPictureInPicture) {
+  ui.pipButton.title = "Picture-in-Picture is not supported by this browser";
+}
 
 $("#copy-command").addEventListener("click", async () => {
   try {
